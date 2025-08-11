@@ -23,8 +23,8 @@
     "prepare": "husky install",
     "docker-build": "docker build -t FantasyPredict ./",
     "docker": "docker run FantasyPredict",
-    "pm2": "pm2 start npm --name \"FantasyPredict_BE\" -- start",
-    "restart": "yarn && yarn build && pm2 restart FantasyPredict_BE"
+    "pm2": "pm2 start npm --name \"FAN_PREDICTOR_BE\" -- start",
+    "restart": "yarn && yarn build && pm2 restart FAN_PREDICTOR_BE"
   },
   "dependencies": {
     "@hokify/agenda": "^6.3.0",

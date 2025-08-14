@@ -8,11 +8,11 @@ export const leaderboardPipeline = (
     userIds = [] as string[],
     fromDate: string,
     toDate: string,
-    pool: string
+    contest: string
 ) => [
     {
         $match: {
-            ...(pool && {
+            ...(contest && {
                 _id: { $in: userIds.map(userId => new Types.ObjectId(userId)) },
             }),
         },
@@ -95,13 +95,11 @@ export const calculatePredictionPoint = (
     predictedHomeScore: number,
     predictedAwayScore: number
 ) => {
-    let point = 0;
+    let point = 0
 
     if (homeScore === predictedHomeScore && awayScore === predictedAwayScore) {
-        point = 3;
+        point = 3
     }
 
-    
-
-    return point;
+    return point
 }

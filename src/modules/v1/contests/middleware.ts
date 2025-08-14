@@ -9,10 +9,10 @@ export const validateCreate = async (
     res: Response,
     next: NextFunction
 ) => {
-    const { name } = req.body
+    const { title } = req.body
     try {
         const [contest, error] = await tryPromise(
-            new ContestService({ name }).findOne()
+            new ContestService({ title }).findOne()
         )
 
         if (error) throw catchError("Error processing request", 400)

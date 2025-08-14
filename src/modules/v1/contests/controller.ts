@@ -68,7 +68,7 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const dbContest = await new ContestService({
             invitationCode,
-            endDate: { $gte: new Date() },
+            endDate: { $gte: new Date().toISOString() },
         }).findOne()
         if (!dbContest) throw catchError("Contest not found!", 404)
         if (isAfter(new Date(), new Date(dbContest.endDate))) {
@@ -138,6 +138,24 @@ export const fetch = async (
         const result = { ...contests, docs: data }
 
         return res.status(200).json(success("Contest retrieved", result))
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const get = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const [contest, error] = await tryPromise(
+            new ContestService({ _id: req.params._id }).findOne()
+        )
+
+        if (error) throw catchError("Errors retrieving users", 400)
+
+        return res.status(200).json(success("Contest retrieved", contest))
     } catch (error) {
         next(error)
     }

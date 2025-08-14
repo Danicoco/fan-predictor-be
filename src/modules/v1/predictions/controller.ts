@@ -10,6 +10,7 @@ import PoolMemberService from "../members/service"
 import { addMinutes, getMinutes, isAfter } from "date-fns"
 import agenda from "../../common/queue/agenda"
 import { agendaIdentifier } from "../../common/queue/identifiers"
+import MemberService from "../members/service"
 
 export const create = async (
     req: Request,
@@ -63,30 +64,27 @@ export const leaderboard = async (
     res: Response,
     next: NextFunction
 ) => {
-    const { competition, fromDate, toDate, poolId } = req.query
+    const { competition, fromDate, toDate, contest } = req.query
     try {
-        let userIds: string[] = []
-        if (poolId) {
+        
             const [members, error] = await tryPromise(
-                new PoolMemberService({}).findAll({
-                    pool: poolId,
+                new MemberService({}).findAll({
+                contest,
                     status: "approved",
                 })
             )
 
             if (error) throw catchError("Error processing request", 400)
             const memberIds = members?.docs.map(doc => doc.user) || []
-            userIds = memberIds
-        }
-        console.log({ userIds, poolId })
+                    
         const leaderboard = await new UserService({}).aggregate(
             // @ts-ignore
             leaderboardPipeline(
                 competition as string,
-                userIds,
+                memberIds,
                 fromDate as string,
                 toDate as string,
-                poolId as string
+                contest as string
             )
         )
 

@@ -8,8 +8,6 @@ export const composeFilter = (req: Request) => {
     const { name, createdBy, privacy, search, invitationCode } = req.query
     let filter = {}
 
-    console.log(createExactMatchRegex(search as string), req.url)
-
     if (search) {
         filter = {
             ...filter,
@@ -24,8 +22,7 @@ export const composeFilter = (req: Request) => {
     if (createdBy) filter = { ...filter, createdBy }
     if (privacy) filter = { ...filter, privacy }
     if (invitationCode) filter = { ...filter, invitationCode }
-
-    console.log(filter, "filter.$o")
+    filter = { ...filter, endDate: { $gte: new Date().toISOString() } }
 
     return filter
 }

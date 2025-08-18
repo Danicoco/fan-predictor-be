@@ -58,10 +58,35 @@ export const securePayment = async (
     const amountInKobo = Number(amount) * 100
     const calculateAmount = paystackCharge.calculateFundingAmount(amountInKobo)
     try {
-        const user = await new UserService({ email: decodeURIComponent(email as string) }).findOne()
+        const user = await new UserService({
+            email: decodeURIComponent(email as string),
+        }).findOne()
         if (!user) throw catchError("Invalid Access", 400)
+        const wallet = await new WalletService({
+            user: String(user._id),
+        }).findOne()
+        if (!wallet)
+            throw catchError("Something went wrong on our end. Please reload")
 
-        console.log({ calculateAmount })
+        await new TransactionService({}).create({
+            user: String(user._id),
+            fee: calculateAmount.totalFee / 100,
+            amount: (calculateAmount.totalFee / 100) - (calculateAmount.charge / 100),
+            wallet: String(wallet._id),
+            status: "pending",
+            type: "credit",
+            reference,
+            currency: "NGN",
+            wasReverted: false,
+            wasRefunded: false,
+            dateInitiated: new Date(),
+            meta: {
+                calculateAmount,
+                base_url: configs.BACKEND_URL,
+                fullName: `${user.firstName} ${user.lastName}`,
+                redirectUrl: process.env.PAY_REDIRECTION,
+            },
+        })
 
         return res.render("payment.ejs", {
             email: user.email,
@@ -82,7 +107,7 @@ export const securePayment = async (
         next(error)
     }
 }
-console.log({redirectUrl: process.env.PAY_REDIRECTION,})
+
 export const webhook = async (
     req: Request,
     res: Response,
@@ -104,22 +129,27 @@ export const verifyTransaction = async (
 ) => {
     const { reference } = req.body
     try {
-        const trans = await new Paystack(reference).verifyTransaction()
-        const localTrans = await new TransactionService({ reference }).findOne();
-
-        if (trans && !localTrans) {
-            const session = await db.startSession()
-            await session.withTransaction(async () => {
-                await creditWallet({
-                    userId: String(req.user._id),
-                    session,
-                    amount: Number(trans.amount / 100),
-                    pendingTransaction: false,
-                    transactionMeta: { ...trans },
+        const localTrans = await new TransactionService({ reference: String(reference), status: 'pending' }).findOne()
+        console.log({localTrans})
+        if (!localTrans) throw catchError("Transaction not found");
+        if (localTrans.status === "pending") {
+            const trans = await new Paystack(reference).verifyTransaction()
+            if (trans && trans.status === 'success') {
+                const session = await db.startSession()
+                await session.withTransaction(async () => {
+                    await creditWallet({
+                        _id: String(localTrans._id),
+                        userId: localTrans.user,
+                        session,
+                        amount: Number(localTrans.amount),
+                        pendingTransaction: false,
+                        transactionMeta: { ...trans },
+                    })
                 })
-            })
-            await session.endSession()
+                await session.endSession()
+            }
         }
+        
         return res.status(200).json({ success: true })
     } catch (error) {
         next(error)

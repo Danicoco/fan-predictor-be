@@ -15,8 +15,8 @@ export const create = async (
 ) => {
     const { bankCode, accountNumber, accountName, bankName, amount } = req.body
     try {
-        const bank = new BankService({ user: req.user._id }).findOne()
-
+        const bank = await new BankService({ user: String(req.user._id) }).findOne()
+        
         const session = await db.startSession()
         await session.withTransaction(async () => {
             await debitWallet({

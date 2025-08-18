@@ -74,6 +74,12 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
         if (isAfter(new Date(), new Date(dbContest.endDate))) {
             throw catchError("Contest has ended!", 400)
         }
+        const member = await new MemberService({
+            user: String(req.user._id),
+            contest: String(dbContest?._id),
+        }).findOne()
+        if (member) throw catchError("You already joined the contest")
+
         const session = await db.startSession()
         await session.withTransaction(async () => {
             if (Number(dbContest.amount)) {
@@ -123,16 +129,27 @@ export const fetch = async (
                         select: "firstName lastName avatar username",
                     },
                     { path: "competition", select: "name logo code" },
-                ]
+                ],
+                "-invitationCode"
             )
         )
 
         if (error) throw catchError("Errors retrieving users", 400)
+        const contestIds = contests?.docs.map(contest => contest._id)
+        const members = await new MemberService({}).findAll({
+            contest: { $in: contestIds },
+        })
         const data = contests?.docs?.map(contest => {
+            const hasMember = members.docs.find(
+                member => String(member.user) === String(req.user._id)
+            )
+
             return {
                 ...contest,
+                isCreator:
                 // @ts-ignore
-                isCreator: String(contest.user?._id) === String(req.user._id),
+                    String(contest.user?._id) === String(req.user._id) ||
+                    !!hasMember,
             }
         })
         const result = { ...contests, docs: data }
@@ -143,11 +160,7 @@ export const fetch = async (
     }
 }
 
-export const get = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const get = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const [contest, error] = await tryPromise(
             new ContestService({ _id: req.params._id }).findOne()

@@ -36,7 +36,8 @@ export const matchPipeline = (
                 $and: [
                     { "awayTeam.score": { $eq: null } },
                     { "homeTeam.score": { $eq: null } },
-                ]
+                ],
+                date: { $gte: new Date() }
             },
         },
         {

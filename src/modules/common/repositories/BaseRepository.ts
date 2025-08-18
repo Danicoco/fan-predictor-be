@@ -109,13 +109,15 @@ class BaseRepository<T> {
         params: Partial<T> | FilterQuery<T>,
         page = 1,
         limit = 10,
-        populate?: PopulateOptions[] | PopulateOptions
+        populate?: PopulateOptions[] | PopulateOptions,
+        select?: string
     ): Promise<IPaginateResponse<T>> {
         return this.paginate({
             query: { ...params, deletedAt: null },
             limit,
             page,
             populate,
+            select
         })
     }
 

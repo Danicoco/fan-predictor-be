@@ -21,7 +21,7 @@ router.use("/users", userRouter);
 router.use("/pins", Authenticate, pinRouter);
 router.use("/banks", Authenticate, bankRouter);
 router.use("/matches", Authenticate, matchRouter);
-router.use("/wallets", Authenticate, walletRouter);
+router.use("/wallets", walletRouter);
 router.use("/contest", Authenticate, contestRouter);
 router.use("/feedbacks", Authenticate, feedbackRouter);
 router.use("/predictions", Authenticate, predictionRouter);

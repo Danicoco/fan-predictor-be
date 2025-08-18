@@ -183,7 +183,6 @@ export const validateChangePassword = async (
     const { oldPassword, password } = req.body
     const user = req.user
     try {
-        console.log({ oldPassword, password })
         if (user && !user?.isActive)
             throw catchError("Your account has been deactivated", 400)
 

@@ -7,6 +7,8 @@ import { randomInt } from "crypto"
 import { configs } from "../../common/utils/config"
 import { addMinutes, isAfter } from "date-fns"
 import { decrytData, encryptData } from "../../common/hashings"
+import Email from "../../thirdpartyApi/zeptomail"
+import { forgotPasswordMail } from "../../mails/forgetPassword"
 
 export const validateCreate = async (
     req: Request,
@@ -129,8 +131,16 @@ export const validateForgetPassword = async (
         )
 
         if (error) throw catchError("Error processing request", 400)
+        const otp = randomInt(1000, 9999)
         if (!user) throw catchError("Invalid request", 400)
-        req.body = { otp: randomInt(1000, 9999) }
+        if (user) {
+            new Email().SendEmail(
+                user,
+                "Forgot Password?",
+                forgotPasswordMail(otp.toString())
+            )
+        }
+        req.body = { otp }
         req.params = { id: String(user._id) }
         return next()
     } catch (error) {

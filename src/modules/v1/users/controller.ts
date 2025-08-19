@@ -9,6 +9,8 @@ import { addHours } from "date-fns"
 import { randomInt } from "crypto"
 import { db } from "../../../databases/connection"
 import { IUser } from "../../../types"
+import Email from "../../thirdpartyApi/zeptomail"
+import { verifyAccountMail } from "../../mails/verifyAccount"
 
 export const create = async (
     req: Request,
@@ -18,7 +20,7 @@ export const create = async (
     try {
         const otp = randomInt(1000, 9999)
         const session = await db.startSession()
-        let result: IUser | null = null
+        let result = null as IUser | null
         await session.withTransaction(async () => {
             const [user, crtError] = await tryPromise(
                 new UserService({}).create({
@@ -34,6 +36,14 @@ export const create = async (
 
             if (crtError) throw catchError("An error occurred! Try again", 400)
         })
+
+        if (result) {
+            new Email().SendEmail(
+                result,
+                "Your verification code",
+                verifyAccountMail(result.firstName, otp.toString())
+            )
+        }
 
         return res.status(201).json(
             success(
@@ -81,7 +91,11 @@ export const login = async (
             .json(
                 success(
                     "Logged In successfully",
-                    { verificationStatus: !!user.verifiedAt, email: user.email, phoneNumber: user.phoneNumber },
+                    {
+                        verificationStatus: !!user.verifiedAt,
+                        email: user.email,
+                        phoneNumber: user.phoneNumber,
+                    },
                     { token }
                 )
             )

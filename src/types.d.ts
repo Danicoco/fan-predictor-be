@@ -240,6 +240,7 @@ interface IPrediction extends DefaultAttributes {
     match: string;
     point: number;
     pool: string;
+    status: "pending" | "completed"
     outcome: string;
     competition: string;
 }

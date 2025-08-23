@@ -17,7 +17,7 @@ const MemberSchema: Schema = new Schema<IMember>(
     {
         autoIndex: true,
         versionKey: false,
-        collection: "Members",
+        collection: "members",
     }
 )
 

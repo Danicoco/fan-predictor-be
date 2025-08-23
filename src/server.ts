@@ -4,6 +4,7 @@ import cors from "cors"
 import helmet from "helmet"
 import express from "express"
 import "./modules/common/utils/config"
+import "./modules/common/jobs/auto-jobs"
 
 import routes from "./routes"
 import { errorHandler } from "./modules/common/utils"

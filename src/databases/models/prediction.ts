@@ -10,8 +10,7 @@ const PredictionSchema: Schema = new Schema<IPrediction>(
     {
         user: { type: "String", required: true, ref: "User" },
         match: { type: "String", required: true, ref: "Match" },
-        // homeTeamScore: { type: "Number", required: true },
-        // awayTeamScore: { type: "Number", required: true },
+        status: { type: "String", required: true, default: "pending" },
         point: { type: "Number", required: true, default: 0 },
         pool: { type: "String" },
         outcome: { type: "String", required: true },

@@ -18,7 +18,7 @@ export const create = async (
     next: NextFunction
 ) => {
     try {
-        const otp = randomInt(1000, 9999)
+        const otp = randomInt(100000, 999999)
         const session = await db.startSession()
         let result = null as IUser | null
         await session.withTransaction(async () => {

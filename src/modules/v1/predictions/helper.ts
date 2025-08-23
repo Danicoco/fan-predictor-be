@@ -2,6 +2,7 @@
 
 import { endOfDay, startOfDay } from "date-fns"
 import { Types } from "mongoose"
+import { IPrediction } from "../../../types";
 
 export const leaderboardPipeline = (
     competition: string,
@@ -92,14 +93,26 @@ export const leaderboardPipeline = (
 export const calculatePredictionPoint = (
     homeScore: number,
     awayScore: number,
-    predictedHomeScore: number,
-    predictedAwayScore: number
+    outcome: string
 ) => {
-    let point = 0
+    let point = 0;
 
-    if (homeScore === predictedHomeScore && awayScore === predictedAwayScore) {
-        point = 3
-    }
+    if (outcome === "homeWin" && homeScore > awayScore) point = 3;
+    if (outcome === "draw" && homeScore === awayScore) point = 3;
+    if (outcome === "awayWin" && homeScore === awayScore) point = 3;
 
     return point
 }
+
+export const composePredictionPoints = (predictions: IPrediction[], homeScore: number, awayScore: number) => {
+    return predictions.map(({ outcome, _id }) => ({
+        updateOne: {
+            filter: {
+                _id
+            },
+            update: {
+                $set: { status: "completed", point: calculatePredictionPoint(homeScore, awayScore, outcome) }
+            }
+        }
+    }));
+};

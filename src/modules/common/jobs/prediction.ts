@@ -1,63 +1,68 @@
 /** @format */
 
-import { Agenda } from "@hokify/agenda"
-import { agendaIdentifier } from "../queue/identifiers"
-import { IPrediction } from "../../../types"
 import MatchService from "../../v1/matches/service"
-import { catchError } from "../utils"
 import FootballData from "../../thirdpartyApi/football"
 import PredictionService from "../../v1/predictions/service"
-import { calculatePredictionPoint } from "../../v1/predictions/helper"
-import { addMinutes } from "date-fns"
+import { composePredictionPoints } from "../../v1/predictions/helper"
+import { subMinutes } from "date-fns"
+import { db } from "../../../databases/connection"
 
-export const processPrediction = (agenda: Agenda) => {
-    agenda.define(agendaIdentifier.CALCULATE_PREDICTION, async (job, done) => {
-        const prediction = job.attrs.data.prediction as IPrediction
-
+export const processPrediction = async () => {
+    try {
         const match = await new MatchService({
-            _id: prediction.match,
+            "homeTeam.score": null,
+            "awayTeam.score": null,
+            date: { $lt: subMinutes(new Date(), 90) },
         }).findOne()
-        if (!match) throw catchError("Match does not exists", 400)
 
-        if (!match.homeTeam.score && !match.awayTeam.score) {
+        if (match) {
             const result = await new FootballData().getMatch(match.matchId)
-            if (!result) throw catchError("Match not found", 400)
-            if (result.status === "FINISHED") {
-                const homeScore = result.score.fullTime.home
-                const awayScore = result.score.fullTime.away
-                const point = calculatePredictionPoint(
-                    homeScore,
-                    awayScore,
-                    0,
-                    0
-                )
-                await new MatchService({ _id: match._id }).update({
-                    homeTeam: { ...match.homeTeam, score: homeScore },
-                    awayTeam: { ...match.awayTeam, score: awayScore },
-                })
-                await new PredictionService({ _id: prediction._id }).update({
-                    point,
-                })
-            } else {
-                job.schedule(addMinutes(new Date(), 5))
-            }
-        } else {
-            const homeScore = match.homeTeam.score || 0
-            const awayScore = match.awayTeam.score || 0
-            console.log({ homeScore, awayScore });
-            const point = 0
-            // calculatePredictionPoint(
-            //     homeScore,
-            //     awayScore,
-            //     prediction.homeTeamScore,
-            //     prediction.awayTeamScore
-            // )
-            await new PredictionService({ _id: prediction._id }).update({
-                point,
-            })
-        }
+            console.log(result)
 
-        job.remove()
-        done()
-    })
+            if (result.status === "FINISHED") {
+                // get all prediction for this match
+                const predictions = await new PredictionService({}).findAll({
+                    match: match._id,
+                    $or: [
+                        { status: "pending" },
+                        { status: { $exists: false } },
+                    ],
+                })
+
+                const session = await db.startSession()
+                await session.withTransaction(async () => {
+                    if (predictions.docs.length) {
+                        const patientWrites = composePredictionPoints(
+                            predictions.docs,
+                            result.score.fullTime.home,
+                            result.score.fullTime.away
+                        )
+                        await new PredictionService({}).bulkWrite(
+                            patientWrites,
+                            session
+                        )
+                    }
+                    await new MatchService({
+                        _id: String(match._id),
+                    }).update(
+                        {
+                            homeTeam: {
+                                ...match.homeTeam,
+                                score: result.score.fullTime.home,
+                            },
+                            awayTeam: {
+                                ...match.awayTeam,
+                                score: result.score.fullTime.away,
+                            },
+                            status: result.status?.toLocaleLowerCase(),
+                        },
+                        session
+                    )
+                })
+                await session.endSession()
+            }
+        }
+    } catch (error) {
+        console.log("Error updating prediction point")
+    }
 }

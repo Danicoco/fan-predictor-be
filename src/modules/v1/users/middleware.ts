@@ -108,7 +108,16 @@ export const validateResendCode = async (
             throw catchError("Your account has been deactivated", 400)
         if (user.verifiedAt)
             throw catchError("Your account has been verified. Proceed to login")
-        req.body = { otp: randomInt(1000, 9999) }
+
+        const otp = randomInt(100000, 999999)
+        if (user) {
+            new Email().SendEmail(
+                user,
+                "Forgot Password?",
+                forgotPasswordMail(otp.toString())
+            )
+        }
+        req.body = { otp }
         req.params = { id: String(user._id) }
         return next()
     } catch (error) {
@@ -131,7 +140,7 @@ export const validateForgetPassword = async (
         )
 
         if (error) throw catchError("Error processing request", 400)
-        const otp = randomInt(1000, 9999)
+        const otp = randomInt(100000, 999999)
         if (!user) throw catchError("Invalid request", 400)
         if (user) {
             new Email().SendEmail(

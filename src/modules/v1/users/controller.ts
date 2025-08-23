@@ -41,7 +41,7 @@ export const create = async (
             new Email().SendEmail(
                 result,
                 "Your verification code",
-                verifyAccountMail(result.firstName, otp.toString())
+                verifyAccountMail(req.body.firstName, otp.toString())
             )
         }
 

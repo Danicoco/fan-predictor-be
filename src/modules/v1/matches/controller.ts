@@ -64,13 +64,13 @@ export const fetch = async (
     next: NextFunction
 ) => {
     try {
-        // const [matches] = await tryPromise(
-        //     new MatchService({}).aggregate(matchPipeline({ ...req.query as any }, String(req.user._id)))
-        // )
-        const matches = getMatchWeek({
-            ...req.query,
-            userId: req.user._id,
-        } as Record<string, string>)
+        const [matches] = await tryPromise(
+            new MatchService({}).aggregate(matchPipeline({ ...req.query as any }, String(req.user._id)))
+        )
+        // const matches = getMatchWeek({
+        //     ...req.query,
+        //     userId: req.user._id,
+        // } as Record<string, string>)
 
         return res
             .status(200)

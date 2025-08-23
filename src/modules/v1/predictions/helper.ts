@@ -100,6 +100,12 @@ export const calculatePredictionPoint = (
     if (outcome === "homeWin" && homeScore > awayScore) point = 3;
     if (outcome === "draw" && homeScore === awayScore) point = 3;
     if (outcome === "awayWin" && homeScore === awayScore) point = 3;
+    if (outcome === "over1.5" && (homeScore + awayScore) > 2) point = 3;
+    if (outcome === "over2.5" && (homeScore + awayScore) > 3) point = 3
+    if (outcome === "over3.5" && (homeScore + awayScore) > 4) point = 3
+    if (outcome === "over4.5" && (homeScore + awayScore) > 5) point = 3
+    if (outcome === "gg" && homeScore >= 1 && awayScore >= 1) point = 3
+    
 
     return point
 }

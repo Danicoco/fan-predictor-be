@@ -9,6 +9,7 @@ import { addMinutes, isAfter } from "date-fns"
 import { decrytData, encryptData } from "../../common/hashings"
 import Email from "../../thirdpartyApi/zeptomail"
 import { forgotPasswordMail } from "../../mails/forgetPassword"
+import { verifyAccountMail } from "../../mails/verifyAccount"
 
 export const validateCreate = async (
     req: Request,
@@ -94,7 +95,7 @@ export const validateResendCode = async (
     res: Response,
     next: NextFunction
 ) => {
-    const { email } = req.body
+    const { email, type = 'verify' } = req.body
     try {
         const [user, error] = await tryPromise(
             new UserService({
@@ -110,7 +111,14 @@ export const validateResendCode = async (
             throw catchError("Your account has been verified. Proceed to login")
 
         const otp = randomInt(100000, 999999)
-        if (user) {
+
+        if (type === "verify") {
+            new Email().SendEmail(
+                user,
+                "Your verification code",
+                verifyAccountMail(req.body.firstName, otp.toString())
+            )
+        } else if (user) {
             new Email().SendEmail(
                 user,
                 "Forgot Password?",

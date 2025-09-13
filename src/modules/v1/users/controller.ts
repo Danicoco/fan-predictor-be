@@ -25,6 +25,7 @@ export const create = async (
             const [user, crtError] = await tryPromise(
                 new UserService({}).create({
                     ...req.body,
+                    email: req.body.email.toLowerCase(),
                     otp,
                     password: encryptData(req.body.password),
                 })
@@ -69,20 +70,20 @@ export const login = async (
     try {
         const [user, error] = await tryPromise(
             new UserService({
-                $or: [{ phoneNumber: to }, { email: to }],
+                $or: [{ phoneNumber: to }, { email: to.toLowerCase() }],
                 isActive: true,
             }).findOne()
         )
 
-        console.log(user);
-        console.log({password});
+        console.log(user)
+        console.log({ password })
 
         if (error) throw catchError("Error processing request", 400)
 
         if (!user) throw catchError("Email/Password is incorrect", 404)
         if (!user.isActive)
             throw catchError("Your account has been deactivated", 400)
-        console.log(decrytData(user.password), password, user.password,)
+        console.log(decrytData(user.password), password, user.password)
         if (decrytData(user.password) !== password)
             throw catchError("Email/Password is incorrect", 400)
 
@@ -90,19 +91,17 @@ export const login = async (
             JSON.stringify({ _id: user._id, exp: addHours(new Date(), 48) })
         )
 
-        return res
-            .status(200)
-            .json(
-                success(
-                    "Logged In successfully",
-                    {
-                        verificationStatus: !!user.verifiedAt,
-                        email: user.email,
-                        phoneNumber: user.phoneNumber,
-                    },
-                    { token }
-                )
+        return res.status(200).json(
+            success(
+                "Logged In successfully",
+                {
+                    verificationStatus: !!user.verifiedAt,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                },
+                { token }
             )
+        )
     } catch (error) {
         next(error)
     }

@@ -74,11 +74,15 @@ export const login = async (
             }).findOne()
         )
 
+        console.log(user);
+        console.log({password});
+
         if (error) throw catchError("Error processing request", 400)
 
         if (!user) throw catchError("Email/Password is incorrect", 404)
         if (!user.isActive)
             throw catchError("Your account has been deactivated", 400)
+        console.log(decrytData(user.password), password, user.password,)
         if (decrytData(user.password) !== password)
             throw catchError("Email/Password is incorrect", 400)
 

@@ -33,4 +33,4 @@ export const configs = {
     ZEP_TOKEN: getEnv("ZEP_TOKEN"),
 }
 
-validateEnvs(Object.keys(configs))
+// validateEnvs(Object.keys(configs))

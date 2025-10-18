@@ -2,10 +2,10 @@
 
 import { Router } from "express"
 
-import { changePasswordSchema, createSchema, fetchSchema, loginSchema, notificationSchema, resendCodeSchema, resetPasswordSchema, updateSchema, verifySchema } from "./validation"
+import { bvnSchema, changePasswordSchema, createSchema, fetchSchema, loginSchema, notificationSchema, resendCodeSchema, resetPasswordSchema, updateSchema, verifySchema } from "./validation"
 import { update, create, fetch, login, profile, remove, userCount } from "./controller"
 import { Authenticate, validator } from "../../common/utils"
-import { validateChangePassword, validateCreate, validateForgetPassword, validateResendCode, validateResetPassword, validateSendNotification, verifyAccount } from "./middleware"
+import { validateBVN, validateChangePassword, validateCreate, validateForgetPassword, validateResendCode, validateResetPassword, validateSendNotification, verifyAccount } from "./middleware"
 
 const userRouter = Router({
     caseSensitive: true,
@@ -45,6 +45,13 @@ userRouter.post(
     "/resend-code",
     validator.body(resendCodeSchema),
     validateResendCode,
+    update
+)
+
+userRouter.patch(
+    "/bvn/:_id",
+    validator.body(bvnSchema),
+    validateBVN,
     update
 )
 

@@ -15,6 +15,7 @@ import Paystack from "../../thirdpartyApi/paystack"
 import { creditWallet } from "./helper"
 import { db } from "../../../databases/connection"
 import TransactionService from "../transactions/service"
+import Sarepay from "../../thirdpartyApi/sarepay"
 
 export const get = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -27,15 +28,34 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
 
         result = wallet
         if (!wallet) {
+            const sarepay = await new Sarepay().createReserveAccount({ ...req.user })
             const [newWallet, newError] = await tryPromise(
                 new WalletService({}).create({
                     user: String(req.user._id),
                     balance: 0,
                     currency: "NGN",
+                    bank: {
+                        accountName: String(sarepay?.account_name),
+                        accountNumber: String(sarepay?.account_number),
+                        bankName: String(sarepay?.bank),
+                    },
                 })
             )
             if (newError) throw catchError("Error processing request", 500)
             result = newWallet
+        }
+
+        if (!wallet?.bank) {
+            const sarepay = await new Sarepay().createReserveAccount({ ...req.user });
+            await tryPromise(
+                new WalletService({ _id: wallet?._id }).update({
+                    bank: {
+                        accountName: String(sarepay?.account_name),
+                        accountNumber: String(sarepay?.account_number),
+                        bankName: String(sarepay?.bank),
+                    },
+                })
+            )
         }
 
         return res
@@ -71,7 +91,8 @@ export const securePayment = async (
         await new TransactionService({}).create({
             user: String(user._id),
             fee: calculateAmount.totalFee / 100,
-            amount: (calculateAmount.totalFee / 100) - (calculateAmount.charge / 100),
+            amount:
+                calculateAmount.totalFee / 100 - calculateAmount.charge / 100,
             wallet: String(wallet._id),
             status: "pending",
             type: "credit",
@@ -129,12 +150,15 @@ export const verifyTransaction = async (
 ) => {
     const { reference } = req.body
     try {
-        const localTrans = await new TransactionService({ reference: String(reference), status: 'pending' }).findOne()
-        console.log({localTrans})
-        if (!localTrans) throw catchError("Transaction not found");
+        const localTrans = await new TransactionService({
+            reference: String(reference),
+            status: "pending",
+        }).findOne()
+        console.log({ localTrans })
+        if (!localTrans) throw catchError("Transaction not found")
         if (localTrans.status === "pending") {
             const trans = await new Paystack(reference).verifyTransaction()
-            if (trans && trans.status === 'success') {
+            if (trans && trans.status === "success") {
                 const session = await db.startSession()
                 await session.withTransaction(async () => {
                     await creditWallet({
@@ -149,7 +173,7 @@ export const verifyTransaction = async (
                 await session.endSession()
             }
         }
-        
+
         return res.status(200).json({ success: true })
     } catch (error) {
         next(error)

@@ -209,7 +209,7 @@ export function generateRandomDigit(min: number, max: number) {
 export const createReference = () => {
     const date = new Date().getTime()
     const ns = format(new Date(), "yyyyMMddhhssmm")
-    const ref = `ONE-${date}-${ns}`;
+    const ref = `PCT-${date}-${ns}`;
 
     return ref
 }
@@ -233,3 +233,8 @@ export const escapeSpecialCharacters = (text: string) => {
 export const createExactMatchRegex = (str: string) =>
     new RegExp(`^${escapeSpecialCharacters(str)}`, "i")
 
+export const snakeToCamel = (snakeCase: string) => {
+    return snakeCase.replace(/_([a-z])/g, function (match, letter) {
+        return letter.toUpperCase()
+    })
+}

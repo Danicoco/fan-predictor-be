@@ -70,6 +70,12 @@ export const resendCodeSchema = z
     })
     .strict()
 
+export const bvnSchema = z
+    .object({
+        bvn: z.string({ required_error: "Enter bvn" }).nonempty(),
+    })
+    .strict()
+
 export const resetPasswordSchema = z
     .object({
         email: z.string({ required_error: "Enter email" }).nonempty(),

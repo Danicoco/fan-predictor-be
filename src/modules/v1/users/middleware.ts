@@ -133,6 +133,28 @@ export const validateResendCode = async (
     }
 }
 
+export const validateBVN = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const [user, error] = await tryPromise(
+            new UserService({
+                _id: req.params._id
+            }).findOne()
+        )
+
+        if (error) throw catchError("Error processing request", 400)
+        if (!user) throw catchError("Invalid request", 400)
+
+        req.params = { id: String(user._id) }
+        return next()
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const validateForgetPassword = async (
     req: Request,
     _res: Response,

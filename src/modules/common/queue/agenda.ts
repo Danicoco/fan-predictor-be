@@ -8,7 +8,7 @@ name: "Predict Contest",
     defaultConcurrency: 5,
     db: { address: configs.DB_URL, collection: "cronjobs" },
 })
-console.log({ address: configs.DB_URL, collection: "cronjobs" })
+
 agenda
     .on("ready", () => console.log("Agenda started!"))
     .on("error", err => console.log("Agenda connection error!", err?.message));

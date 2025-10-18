@@ -31,6 +31,8 @@ export const configs = {
     NEWS_API: getEnv("NEWS_API"),
     ZEP_URL: getEnv("ZEP_URL"),
     ZEP_TOKEN: getEnv("ZEP_TOKEN"),
+    SAREPAY_BASEURL: getEnv("SAREPAY_BASEURL"),
+    SAREPAY_API_KEY: getEnv("SAREPAY_API_KEY"),
 }
 
 // validateEnvs(Object.keys(configs))

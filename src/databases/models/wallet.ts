@@ -6,6 +6,11 @@ import { mongoosePagination, Pagination } from "mongoose-paginate-ts"
 import { db } from "../connection"
 import { IWallet } from "../../types"
 
+const bankSchema = new Schema({
+    bankName: { type: "String" },
+    accountName: { type: "String" },
+    accountNumber: { type: "String" },
+})
 
 const WalletSchema: Schema = new Schema<IWallet>(
     {
@@ -13,6 +18,7 @@ const WalletSchema: Schema = new Schema<IWallet>(
         balance: { type: "Number", required: true, default: 0 },
         currency: { type: "String", default: "NGN", required: true },
         dateOfLastTopUp: { type: "String" },
+        bank: { type: bankSchema },
         deletedAt: { type: "String", default: null },
     },
     {

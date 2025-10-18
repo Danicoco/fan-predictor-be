@@ -22,6 +22,7 @@ interface IUser extends DefaultAttributes {
     password: string
     verifiedAt: Date
     otp: string
+    bvn: string
     isActive: boolean
     avatar: string
     sendNotification: boolean
@@ -32,8 +33,40 @@ interface IWallet extends DefaultAttributes {
     balance: number
     currency: string
     dateOfLastTopUp?: Date
+    bank: {
+        bankName: string;
+        accountName: string;
+        accountNumber: string;
+    }
 }
 
+interface ISettlement extends DefaultAttributes {
+    type: string
+    meta: {
+        customer_reference: string
+        transaction_reference: string
+        processorReference: string
+        amount: string
+        charge: string
+        netAmount: string
+        expectedAmount: string
+        channel: string
+        sender: {
+            originatorBank: string
+            originatorName: string
+            originatorAccountNumber: string
+        }
+        recipient: string
+        account_reference: string
+        status: string
+        createdAt: string
+        updatedAt: string
+        meta: { customerMeta: any[]; notification: any[] }
+        customerMeta: []
+        subaccount: []
+    }
+    status: ITransactionStatus
+}
 interface IPin extends DefaultAttributes {
     code: string
     user: string
@@ -70,11 +103,11 @@ interface IPool extends DefaultAttributes {
         amount: number
         paid: boolean
         poolSharing: "first-take-all" | "top-three"
-        endDate: Date;
-        code: string;
+        endDate: Date
+        code: string
     }
     totalMembers: number
-    competition: string;
+    competition: string
     isActive: boolean
     createdBy: string
     icon?: string
@@ -87,8 +120,8 @@ interface IPoolMember extends DefaultAttributes {
     user: string
     gameWeeksParticipated: GameWeek[]
     totalAmountSpent: number
-    status: 'approved' | 'declined' | 'pending'
-    type: 'player' | 'captain'
+    status: "approved" | "declined" | "pending"
+    type: "player" | "captain"
 }
 
 type Area = {
@@ -205,13 +238,13 @@ interface ICompetition extends DefaultAttributes {
     name: string
     type: string
     code: string
-    filters: [{ name: string, value: string }],
-    default: boolean;
+    filters: [{ name: string; value: string }]
+    default: boolean
 }
 
 interface IUserCompetition extends ICompetition {
     user: string
-    competition: string;
+    competition: string
 }
 
 interface IMatch extends DefaultAttributes {
@@ -228,129 +261,158 @@ interface IMatch extends DefaultAttributes {
         crest: string
         score: number | null
     }
-    matchday: string;
-    date: Date;
-    competition: string;
-    stage: string;
-    matchId: string;
+    matchday: string
+    date: Date
+    competition: string
+    stage: string
+    matchId: string
 }
 
 interface IPrediction extends DefaultAttributes {
-    user: string;
-    match: string;
-    point: number;
-    pool: string;
+    user: string
+    match: string
+    point: number
+    pool: string
     status: "pending" | "completed"
-    outcome: string;
-    competition: string;
+    outcome: string
+    competition: string
 }
 
 interface IFeedback extends DefaultAttributes {
-    user: string;
+    user: string
     message: string
 }
 
-
 interface IWithdrawal extends DefaultAttributes {
-    user: string;
-    amount: string;
+    user: string
+    amount: string
     meta: Record<string, any>
 }
 
 interface IBank extends DefaultAttributes {
-    user: string;
-    bankName: string;
-    bankCode: string;
-    accountName: string;
-    accountNumber: string;
+    user: string
+    bankName: string
+    bankCode: string
+    accountName: string
+    accountNumber: string
 }
 
 interface IContest extends DefaultAttributes {
-    user: string;
-    title: string;
-    endDate: Date;
-    amount: number;
-    startDate: Date;
-    description: string;
-    competition: string;
-    totalUsersJoined: number;
-    type: 'public' | 'private';
+    user: string
+    title: string
+    endDate: Date
+    amount: number
+    startDate: Date
+    description: string
+    competition: string
+    totalUsersJoined: number
+    type: "public" | "private"
     winType: {
         first: number // perecentage
-        second: number;
-        third: number;
+        second: number
+        third: number
     }
     invitationCode: string
 }
 
 interface IMember extends DefaultAttributes {
     contest: string
-    user: string;
+    user: string
     status: "pending" | "approved"
     type: "captain" | "member"
 }
 
 type MatchData = {
     area: {
-      id: number;
-      name: string;
-      code: string;
-      flag: string;
-    };
+        id: number
+        name: string
+        code: string
+        flag: string
+    }
     competition: {
-      id: number;
-      name: string;
-      code: string;
-      type: string;
-      emblem: string;
-    };
+        id: number
+        name: string
+        code: string
+        type: string
+        emblem: string
+    }
     season: {
-      id: number;
-      startDate: string; // ISO date string
-      endDate: string;   // ISO date string
-      currentMatchday: number;
-      winner: null | any; // adjust if winner data becomes known
-    };
-    id: number;
-    utcDate: string; // ISO date string
-    status: string;
-    venue: string | null;
-    matchday: number;
-    stage: string;
-    group: string | null;
-    lastUpdated: string; // ISO date string
+        id: number
+        startDate: string // ISO date string
+        endDate: string // ISO date string
+        currentMatchday: number
+        winner: null | any // adjust if winner data becomes known
+    }
+    id: number
+    utcDate: string // ISO date string
+    status: string
+    venue: string | null
+    matchday: number
+    stage: string
+    group: string | null
+    lastUpdated: string // ISO date string
     homeTeam: {
-      id: number;
-      name: string;
-      shortName: string;
-      tla: string;
-      crest: string;
-    };
+        id: number
+        name: string
+        shortName: string
+        tla: string
+        crest: string
+    }
     awayTeam: {
-      id: number;
-      name: string;
-      shortName: string;
-      tla: string;
-      crest: string;
-    };
+        id: number
+        name: string
+        shortName: string
+        tla: string
+        crest: string
+    }
     score: {
-      winner: string | null;
-      duration: string;
-      fullTime: {
-        home: number | null;
-        away: number | null;
-      };
-      halfTime: {
-        home: number | null;
-        away: number | null;
-      };
-    };
+        winner: string | null
+        duration: string
+        fullTime: {
+            home: number | null
+            away: number | null
+        }
+        halfTime: {
+            home: number | null
+            away: number | null
+        }
+    }
     odds: {
-      msg: string;
-    };
-    referees: any[]; // replace with detailed referee type if known
-  };
-  
+        msg: string
+    }
+    referees: any[] // replace with detailed referee type if known
+}
+
+type ISarepayBankResponse = {
+    code: string
+    name: string
+}
+
+type ISarepayValidateResponse = {
+    account_number: string
+    account_name: string
+}
+
+type ISarepayVerifyTransReponse = {
+    reference: string
+    amount: string
+    charge: string
+    status: string
+    recipient_name: string
+    recipient_bank_code: string
+    recipient_account_number: string
+    processor_reference: string
+    merchant_reference: string
+}
+
+type ISarepayVirtualResponse = {
+    account_number: string
+    account_name: string
+    bank: string
+    status: string
+    expires_at: string
+    validity_type: string
+}
 
 type PaystackResponse = {
     status: boolean

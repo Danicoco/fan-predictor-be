@@ -33,7 +33,7 @@ interface IWallet extends DefaultAttributes {
     balance: number
     currency: string
     dateOfLastTopUp?: Date
-    bank: {
+    bank?: {
         bankName: string
         accountName: string
         accountNumber: string

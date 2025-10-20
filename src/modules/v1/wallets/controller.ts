@@ -28,38 +28,23 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
 
         result = wallet
         if (!wallet) {
-            const sarepay = await new Sarepay().createReserveAccount({
-                ...req.user,
-            })
+            // const sarepay = await new Sarepay().createReserveAccount({
+            //     ...req.user,
+            // })
             const [newWallet, newError] = await tryPromise(
                 new WalletService({}).create({
                     user: String(req.user._id),
                     balance: 0,
                     currency: "NGN",
-                    bank: {
-                        accountName: String(sarepay?.account_name),
-                        accountNumber: String(sarepay?.account_number),
-                        bankName: String(sarepay?.bank),
-                    },
+                    // bank: {
+                    //     accountName: String(sarepay?.account_name),
+                    //     accountNumber: String(sarepay?.account_number),
+                    //     bankName: String(sarepay?.bank),
+                    // },
                 })
             )
             if (newError) throw catchError("Error processing request", 500)
             result = newWallet
-        }
-
-        if (!wallet?.bank) {
-            const sarepay = await new Sarepay().createReserveAccount({
-                ...req.user,
-            })
-            await tryPromise(
-                new WalletService({ _id: wallet?._id }).update({
-                    bank: {
-                        accountName: String(sarepay?.account_name),
-                        accountNumber: String(sarepay?.account_number),
-                        bankName: String(sarepay?.bank),
-                    },
-                })
-            )
         }
 
         return res

@@ -107,7 +107,7 @@ export const composePaymentBody = (req: Request, amount: number) => {
     const values = {
         key: configs.SAREPAY_PUBLIC_KEY,
         token: configs.SAREPAY_TOKEN,
-        amount: 1000,
+        amount,
         currency: "NGN",
         feeBearer: "merchant",
         defaultPaymentMethod: "card",

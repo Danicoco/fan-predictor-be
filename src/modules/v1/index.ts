@@ -15,6 +15,7 @@ import userCompetitionRouter from "./user-competitions/route";
 import feedbackRouter from "./feedbacks/route";
 import memberRouter from "./members/route";
 import contestRouter from "./contests/route";
+import settlementRouter from "./settlement/routes";
 
 const router = Router();
 router.use("/users", userRouter);
@@ -33,6 +34,6 @@ router.use("/user-competitions", Authenticate, userCompetitionRouter);
 
 router.get("/pay", securePayment)
 router.get("/webhook", webhook)
-
+router.use("/settlements", settlementRouter)
 
 export default router;

@@ -2,7 +2,7 @@
 
 import { Router } from "express"
 
-import { get, verifyTransaction } from "./controller"
+import { get, initializeSarepayPayment, verifyTransaction } from "./controller"
 import { Authenticate } from "../../common/utils"
 
 const walletRouter = Router({
@@ -11,6 +11,7 @@ const walletRouter = Router({
 })
 
 walletRouter.get("/", Authenticate, get)
+walletRouter.post("/", Authenticate, initializeSarepayPayment)
 walletRouter.post("/verify-payment", verifyTransaction)
 
 export default walletRouter

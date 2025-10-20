@@ -3,10 +3,11 @@
 import { Request } from "express"
 import WalletService from "./service"
 import { ClientSession } from "mongoose"
-import { catchError, tryPromise } from "../../common/utils"
+import { catchError, createReference, generateRandomDigit, tryPromise } from "../../common/utils"
 import { composeTransactionDoc } from "../transactions/helper"
 import TransactionService from "../transactions/service"
 import { TRANSACTION_STATUS } from "../transactions/constant"
+import { configs } from "../../common/utils/config"
 
 export const composeFilter = (req: Request) => {
     const { firstName, lastName, email, phoneNumber, isActive } = req.query
@@ -68,7 +69,7 @@ type CreditProps = {
     userId: string
     session: ClientSession
     amount: number
-    _id: string;
+    _id: string
     pendingTransaction: boolean
     transactionMeta?: Record<string, any>
 }
@@ -83,10 +84,10 @@ export const creditWallet = async (params: CreditProps) => {
     if (!wallet)
         throw catchError("You cannot perform this operation at this moment")
 
-    const transaction = await new TransactionService({ user: params.userId, _id: String(params._id) }).update(
-        { status: "successful", dateCompleted: new Date() },
-        session
-    )
+    const transaction = await new TransactionService({
+        user: params.userId,
+        _id: String(params._id),
+    }).update({ status: "successful", dateCompleted: new Date() }, session)
 
     const [currentWallet] = await Promise.all([
         new WalletService({ _id: wallet._id }).update(
@@ -99,4 +100,30 @@ export const creditWallet = async (params: CreditProps) => {
     ])
 
     return { currentWallet, transaction }
+}
+
+export const composePaymentBody = (req: Request, amount: number) => {
+    const { firstName, lastName, email, _id } = req.user;
+    const values = {
+        key: configs.SAREPAY_PUBLIC_KEY,
+        token: configs.SAREPAY_TOKEN,
+        amount: 1000,
+        currency: "NGN",
+        feeBearer: "merchant",
+        defaultPaymentMethod: "card",
+        paymentMethods: [],
+        customer: {
+            name: `${firstName} ${lastName}`,
+            email
+        },
+        containerId: generateRandomDigit(10000, 99999),
+        metadata: {
+            taxIs: "",
+            customerId: _id,
+            redirect_url: "https://www.predictcontest.com/wallet"
+        },
+        reference: createReference(),
+    }
+
+    return values
 }

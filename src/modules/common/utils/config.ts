@@ -33,6 +33,8 @@ export const configs = {
     ZEP_TOKEN: getEnv("ZEP_TOKEN"),
     SAREPAY_BASEURL: getEnv("SAREPAY_BASEURL"),
     SAREPAY_API_KEY: getEnv("SAREPAY_API_KEY"),
+    SAREPAY_PUBLIC_KEY: getEnv("SAREPAY_PUBLIC_KEY"),
+    SAREPAY_TOKEN: getEnv("SAREPAY_TOKEN")
 }
 
 // validateEnvs(Object.keys(configs))

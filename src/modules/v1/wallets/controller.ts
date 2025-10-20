@@ -12,7 +12,7 @@ import { paystackCharge } from "../../common/utils/charges"
 import UserService from "../users/service"
 import { configs } from "../../common/utils/config"
 import Paystack from "../../thirdpartyApi/paystack"
-import { creditWallet } from "./helper"
+import { composePaymentBody, creditWallet } from "./helper"
 import { db } from "../../../databases/connection"
 import TransactionService from "../transactions/service"
 import Sarepay from "../../thirdpartyApi/sarepay"
@@ -28,7 +28,9 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
 
         result = wallet
         if (!wallet) {
-            const sarepay = await new Sarepay().createReserveAccount({ ...req.user })
+            const sarepay = await new Sarepay().createReserveAccount({
+                ...req.user,
+            })
             const [newWallet, newError] = await tryPromise(
                 new WalletService({}).create({
                     user: String(req.user._id),
@@ -46,7 +48,9 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
         }
 
         if (!wallet?.bank) {
-            const sarepay = await new Sarepay().createReserveAccount({ ...req.user });
+            const sarepay = await new Sarepay().createReserveAccount({
+                ...req.user,
+            })
             await tryPromise(
                 new WalletService({ _id: wallet?._id }).update({
                     bank: {
@@ -175,6 +179,22 @@ export const verifyTransaction = async (
         }
 
         return res.status(200).json({ success: true })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const initializeSarepayPayment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const { amount } = req.body
+    try {
+        const body = composePaymentBody(req, Number(amount))
+        // @ts-ignore
+        const data = await new Sarepay().initializeHostedPayment(body)
+        return res.status(200).json(success("Payment initialized", data))
     } catch (error) {
         next(error)
     }

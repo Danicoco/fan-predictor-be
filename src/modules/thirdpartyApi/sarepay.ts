@@ -4,23 +4,25 @@ import axios from "axios"
 import { catchError, createReference, snakeToCamel } from "../common/utils"
 import {
     ISarepayBankResponse,
+    ISarepayPayment,
     ISarepayValidateResponse,
     ISarepayVirtualResponse,
 } from "../../types"
 import { configs } from "../common/utils/config"
 
 class Sarepay {
-    private http = () =>
+    private http = (usePublic = false) =>
         axios.create({
             baseURL: configs.SAREPAY_BASEURL,
             timeout: 30000,
             headers: {
                 "Content-Type": "application/json",
-                "api-key": configs.SAREPAY_API_KEY,
+                ...(!usePublic && {"api-key": configs.SAREPAY_API_KEY }),
+                ...(usePublic && { "X-Pub-Key":"PUBLIC-xFXTPIlD3uJs1iTJT0MAElx9AWdbvm2X" }),
                 Accept: "application/json",
             },
         })
-        
+
     constructor() {}
 
     public async createReserveAccount(
@@ -50,11 +52,11 @@ class Sarepay {
         }
     }
 
-    private handleResponse (data: Record<string, any>) {
-        let result: any = {};
+    private handleResponse(data: Record<string, any>) {
+        let result: any = {}
         if (data) {
             Object.keys(data).forEach(d => {
-                result[snakeToCamel(d)] =  data[d]
+                result[snakeToCamel(d)] = data[d]
             })
         }
 
@@ -113,9 +115,7 @@ class Sarepay {
         }
     }
 
-    public async verifyTransaction(
-        id: string
-    ): Promise<{} | undefined> {
+    public async verifyTransaction(id: string): Promise<{} | undefined> {
         const { data } = await this.http()
             .get(`/disbursement/requery/${id}`)
             .catch((e: any) => {
@@ -126,6 +126,25 @@ class Sarepay {
             return this.handleResponse(data.data)
         }
     }
+
+    // ["transfer", "card"]
+    public async initializeHostedPayment(
+        values: ISarepayPayment
+    ): Promise<{} | undefined> {
+        const { data } = await this.http(true)
+            .post(`/payments/initialize`, {
+                ...values,
+                paymentMethods: ["transfer", "card"],
+            })
+            .catch((e: any) => {
+                console.log(e.response);
+                throw catchError(e.response?.data.message)
+            })
+
+        if (data.data) {
+            return this.handleResponse(data.data)
+        }
+    }
 }
 
-export default Sarepay;
+export default Sarepay

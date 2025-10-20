@@ -34,9 +34,9 @@ interface IWallet extends DefaultAttributes {
     currency: string
     dateOfLastTopUp?: Date
     bank: {
-        bankName: string;
-        accountName: string;
-        accountNumber: string;
+        bankName: string
+        accountName: string
+        accountNumber: string
     }
 }
 
@@ -418,6 +418,27 @@ type PaystackResponse = {
     status: boolean
     message: string
     data: PaystackResponseData
+}
+
+type ISarepayPayment = {
+    key: string
+    token: string
+    amount: number
+    currency: "NGN"
+    feeBearer: "merchant"
+    defaultPaymentMethod: "card"
+    paymentMethods: string[]
+    customer: {
+        name: string
+        email: string
+    }
+    containerId: string
+    metadata: {
+        taxIs: string
+        customerId: string
+        redirect_url: string // specify this to redirect your customers after payment
+    }
+    reference: string
 }
 
 interface IPaginator<T> {

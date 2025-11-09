@@ -40,6 +40,15 @@ interface IWallet extends DefaultAttributes {
     }
 }
 
+interface IPayment extends DefaultAttributes {
+    user: string
+    provider: "sarepay" | "paystack" | "nowpayment"
+    amount: number
+    status: "pending" | "successful" | "failed"
+    currency: string
+    meta: Record<string, any>
+}
+
 interface ISettlement extends DefaultAttributes {
     type: string
     meta: {

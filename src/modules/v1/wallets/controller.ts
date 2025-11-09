@@ -16,6 +16,8 @@ import { composePaymentBody, creditWallet } from "./helper"
 import { db } from "../../../databases/connection"
 import TransactionService from "../transactions/service"
 import Sarepay from "../../thirdpartyApi/sarepay"
+import NowPayment from "../../thirdpartyApi/nowpayment"
+import PaymentService from "../payments/service"
 
 export const get = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -179,6 +181,28 @@ export const initializeSarepayPayment = async (
         const body = composePaymentBody(req, Number(amount))
         // @ts-ignore
         const data = await new Sarepay().initializeHostedPayment(body)
+        return res.status(200).json(success("Payment initialized", data))
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const initializeNowPayment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const { amount } = req.body
+    try {
+        const data = await new NowPayment().createPayment(Number(amount))
+        await new PaymentService({}).create({
+            user: String(req.user._id),
+            provider: "nowpayment",
+            amount: Number(amount),
+            status: "pending",
+            currency: "usd",
+            meta: data,
+        })
         return res.status(200).json(success("Payment initialized", data))
     } catch (error) {
         next(error)

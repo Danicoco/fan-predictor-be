@@ -17,7 +17,6 @@ export const processPrediction = async () => {
 
         if (match) {
             const result = await new FootballData().getMatch(match.matchId)
-            console.log(result)
 
             if (result.status === "FINISHED") {
                 // get all prediction for this match

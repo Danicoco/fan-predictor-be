@@ -34,7 +34,8 @@ export const configs = {
     SAREPAY_BASEURL: getEnv("SAREPAY_BASEURL"),
     SAREPAY_API_KEY: getEnv("SAREPAY_API_KEY"),
     SAREPAY_PUBLIC_KEY: getEnv("SAREPAY_PUBLIC_KEY"),
-    SAREPAY_TOKEN: getEnv("SAREPAY_TOKEN")
+    SAREPAY_TOKEN: getEnv("SAREPAY_TOKEN"),
+    NOW_PAYMENT_API: getEnv("NOW_PAYMENT_API"),
 }
 
 // validateEnvs(Object.keys(configs))

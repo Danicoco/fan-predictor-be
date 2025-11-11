@@ -194,13 +194,15 @@ export const initializeNowPayment = async (
 ) => {
     const { amount } = req.body
     try {
-        const data = await new NowPayment().createPayment(Number(amount))
+        const fee = 0;
+        const data = await new NowPayment().createPayment(Number(amount), fee);
         await new PaymentService({}).create({
             user: String(req.user._id),
             provider: "nowpayment",
             amount: Number(amount),
             status: "pending",
             currency: "usd",
+            fee,
             meta: data,
         })
         return res.status(200).json(success("Payment initialized", data))

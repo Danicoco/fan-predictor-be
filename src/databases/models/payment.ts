@@ -11,6 +11,7 @@ const PaymentSchema: Schema = new Schema<IPayment>(
         user: { type: "String", required: true, ref: "User" },
         provider: { type: "String", required: true },
         amount: { type: "Number", required: true },
+        fee: { type: "Number", required: true },
         status: {
             type: "String",
             required: true,

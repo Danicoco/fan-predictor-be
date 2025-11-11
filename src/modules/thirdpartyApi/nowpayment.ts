@@ -14,18 +14,21 @@ class NowPayment {
     })
     constructor() {}
 
-    public async createPayment(amount: number) {
+    public async createPayment(amount: number, fee: number) {
         const values = {
-            price_amount: Number(amount),
+            price_amount: Number(amount) + Number(fee),
             price_currency: "usd",
-            pay_currency: "btc",
+            pay_currency: "usdtsol",
             order_id: createReference(),
             order_description: `Deposit of ${amount} for PvP`,
             ipn_callback_url: "https://api.predictcontest.com/v1/now/ipn",
             success_url: "https://predictcontest.com/deposit-successful",
             cancel_url: "https://predictcontest.com/deposit-failed",
         }
-        const { data } = await this.http.post("/v1/invoice", values);
+        const { data } = await this.http.post("/v1/invoice", values).catch((e) => {
+            console.log(e.response.data);
+            throw new Error("Error creating payment");
+        });
         return data;
     }
 }

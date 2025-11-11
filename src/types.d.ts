@@ -46,6 +46,7 @@ interface IPayment extends DefaultAttributes {
     amount: number
     status: "pending" | "successful" | "failed"
     currency: string
+    fee: number
     meta: Record<string, any>
     webhookResponse?: Record<string, any>
 }

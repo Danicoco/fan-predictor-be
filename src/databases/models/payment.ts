@@ -18,6 +18,7 @@ const PaymentSchema: Schema = new Schema<IPayment>(
         },
         currency: { type: "String", required: true, enum: ["usd", "ngn"] },
         meta: { type: "Map", required: true },
+        webhookResponse: { type: "Map" },
         deletedAt: { type: "String", default: null },
     },
     {

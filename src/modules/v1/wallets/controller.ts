@@ -208,3 +208,18 @@ export const initializeNowPayment = async (
         next(error)
     }
 }
+
+export const nowPaymentWebhook = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        await new PaymentService({ _id: "690ffbbaa9961a7a9bb67a29"}).update({
+            webhookResponse: req.body,
+        })
+        return res.status(200).json(success("Payment saved", req.body))
+    } catch (error) {
+        next(error)
+    }
+}

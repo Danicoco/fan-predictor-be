@@ -10,7 +10,7 @@ import matchRouter from "./matches/route";
 import predictionRouter from "./predictions/route";
 import withdrawalRouter from "./withdrawals/route";
 import bankRouter from "./banks/route";
-import { securePayment, webhook } from "./wallets/controller";
+import { nowPaymentWebhook, securePayment, webhook } from "./wallets/controller";
 import userCompetitionRouter from "./user-competitions/route";
 import feedbackRouter from "./feedbacks/route";
 import memberRouter from "./members/route";
@@ -35,5 +35,6 @@ router.use("/user-competitions", Authenticate, userCompetitionRouter);
 router.get("/pay", securePayment)
 router.get("/webhook", webhook)
 router.use("/settlements", settlementRouter)
+router.post("/now/ipn", nowPaymentWebhook);
 
 export default router;

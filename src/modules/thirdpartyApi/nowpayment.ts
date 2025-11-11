@@ -21,7 +21,7 @@ class NowPayment {
             pay_currency: "btc",
             order_id: createReference(),
             order_description: `Deposit of ${amount} for PvP`,
-            ipn_callback_url: "https://api.predictcontest.com/now/ipn",
+            ipn_callback_url: "https://api.predictcontest.com/v1/now/ipn",
             success_url: "https://predictcontest.com/deposit-successful",
             cancel_url: "https://predictcontest.com/deposit-failed",
         }

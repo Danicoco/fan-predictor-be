@@ -26,7 +26,7 @@ class NowPayment {
             cancel_url: "https://predictcontest.com/deposit-failed",
         }
         const { data } = await this.http.post("/v1/invoice", values).catch((e) => {
-            console.log(e.response.data);
+            console.log(e.response?.data);
             throw new Error("Error creating payment");
         });
         return data;

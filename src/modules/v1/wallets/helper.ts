@@ -71,6 +71,7 @@ type CreditProps = {
     amount: number
     _id: string
     pendingTransaction: boolean
+    fee?: number    
     transactionMeta?: Record<string, any>
 }
 
@@ -84,10 +85,26 @@ export const creditWallet = async (params: CreditProps) => {
     if (!wallet)
         throw catchError("You cannot perform this operation at this moment")
 
-    const transaction = await new TransactionService({
-        user: params.userId,
-        _id: String(params._id),
-    }).update({ status: "successful", dateCompleted: new Date() }, session)
+    let transaction
+    if (params._id) {
+        transaction = await new TransactionService({
+            user: params.userId,
+            _id: String(params._id),
+        }).update({ status: "successful", dateCompleted: new Date() }, session)
+    } else {
+        transaction = await new TransactionService({}).create({
+            user: params.userId,
+                fee: params.fee || 0,
+                amount: params.amount,
+                wallet: String(wallet._id),
+                status: 'successful',
+                type: 'credit',
+                reference: createReference(),
+                currency: 'usd',
+                dateInitiated: new Date(),
+                meta: params.transactionMeta
+        })
+    }
 
     const [currentWallet] = await Promise.all([
         new WalletService({ _id: wallet._id }).update(

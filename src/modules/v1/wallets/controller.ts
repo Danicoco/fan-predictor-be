@@ -194,8 +194,8 @@ export const initializeNowPayment = async (
 ) => {
     const { amount } = req.body
     try {
-        const fee = 0;
-        const data = await new NowPayment().createPayment(Number(amount), fee);
+        const fee = 0.2
+        const data = await new NowPayment().createPayment(Number(amount), fee)
         await new PaymentService({}).create({
             user: String(req.user._id),
             provider: "nowpayment",
@@ -211,13 +211,56 @@ export const initializeNowPayment = async (
     }
 }
 
+export const processNowPayment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const { paymentId } = req.body
+    try {
+        const nowPayment = await new NowPayment()
+            .getPaymentStatus(String(paymentId))
+            .catch(e => null)
+        if (nowPayment) {
+            const invoice = await new PaymentService({
+                "meta.id": String(nowPayment.invoice_id),
+            }).findOne()
+            if (invoice && invoice.status === "pending") {
+                const session = await db.startSession()
+                await session.withTransaction(async () => {
+                    const amountToCredit =
+                        Number(nowPayment.actually_paid) - Number(invoice.fee)
+                    await creditWallet({
+                        userId: invoice.user,
+                        session,
+                        amount: amountToCredit,
+                        _id: "",
+                        fee: invoice.fee,
+                        pendingTransaction: false,
+                        transactionMeta: nowPayment,
+                    })
+                    await new PaymentService({ _id: invoice._id }).update({
+                        status: "successful",
+                        webhookResponse: nowPayment,
+                    })
+                })
+                await session.endSession()
+            }
+        }
+
+        return res.status(200).json(success("Payment saved", req.body))
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const nowPaymentWebhook = async (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
     try {
-        await new PaymentService({ _id: "690ffbbaa9961a7a9bb67a29"}).update({
+        await new PaymentService({ _id: "690ffbbaa9961a7a9bb67a29" }).update({
             webhookResponse: req.body,
         })
         return res.status(200).json(success("Payment saved", req.body))

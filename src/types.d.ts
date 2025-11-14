@@ -394,6 +394,30 @@ type MatchData = {
     referees: any[] // replace with detailed referee type if known
 }
 
+type NowPaymentStatusResponse = {
+  payment_id: number,
+  invoice_id: number,
+  payment_status: 'partially_paid' | 'fully_paid',
+  pay_address: string,
+  payin_extra_id: null,
+  price_amount: number,
+  price_currency: string,
+  pay_amount: number,
+  actually_paid: number,
+  pay_currency: string,
+  order_id: string,
+  order_description: string,
+  purchase_id: number,
+  outcome_amount: number,
+  outcome_currency: string,
+  payout_hash: string,
+  payin_hash: string,
+  created_at: Date,
+  updated_at: Date,
+  burning_percent: string,
+  type: 'crypto2crypto'
+}
+
 type ISarepayBankResponse = {
     code: string
     name: string
